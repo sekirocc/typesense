@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.17.5)
 project(typesense)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 cmake_policy(SET CMP0074 NEW)
 cmake_policy(SET CMP0003 NEW)
 
@@ -40,13 +42,96 @@ if (APPLE)
     add_definitions(-DGTEST_USE_OWN_TR1_TUPLE)
     add_definitions(-D__GLIBCXX__)
 
-    # Prefer brew installated libraries
-    set(OPENSSL_ROOT_DIR /usr/local/opt/openssl@1.1)
-    set(ENV{OPENSSL_ROOT_DIR} /usr/local/opt/openssl@1.1)
 
-    set(SNAPPY_ROOT_DIR /usr/local/opt/snappy)
-    set(ZLIB_ROOT /usr/local/opt/zlib)
-    set(CMAKE_PREFIX_PATH /usr/local/opt/curl-openssl /usr/local/opt/icu4c)
+    IF (NOT (DEFINED OPENSSL_ROOT_DIR OR DEFINED ENV{OPENSSL_ROOT_DIR}))
+      EXECUTE_PROCESS(
+        COMMAND brew --prefix openssl@1.1
+        OUTPUT_VARIABLE OPENSSL_ROOT_DIR
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+      )
+      IF (NOT EXISTS ${OPENSSL_ROOT_DIR})
+        MESSAGE(STATUS "*************************************************************************\n"
+          "   * Setting OPENSSL_ROOT_DIR to /usr/local. On macOS, OpenSSL should be   *\n"
+          "   * installed using homebrew or OPENSSL_ROOT_DIR must be set to the path  *\n"
+          "   * that has OpenSSL installed.                                           *\n"
+          "   *************************************************************************")
+        SET(OPENSSL_ROOT_DIR "/usr/local")
+      ENDIF ()
+    ENDIF ()
+
+    MESSAGE(STATUS "set ENV{OPENSSL_ROOT_DIR} to: ${OPENSSL_ROOT_DIR}")
+    set(ENV{OPENSSL_ROOT_DIR} ${OPENSSL_ROOT_DIR})
+
+    # # Prefer brew installated libraries
+    # set(OPENSSL_ROOT_DIR /usr/local/opt/openssl@1.1)
+    # set(ENV{OPENSSL_ROOT_DIR} /usr/local/opt/openssl@1.1)
+
+
+    EXECUTE_PROCESS(
+        COMMAND brew --prefix snappy
+        OUTPUT_VARIABLE SNAPPY_ROOT_DIR
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+    # set(SNAPPY_ROOT_DIR /usr/local/opt/snappy)
+
+    EXECUTE_PROCESS(
+        COMMAND brew --prefix zlib
+        OUTPUT_VARIABLE ZLIB_ROOT
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+    MESSAGE(STATUS "set ENV{ZLIB_ROOT} to: ${ZLIB_ROOT}")
+    set(ENV{ZLIB_ROOT} ${ZLIB_ROOT})
+    # set(ZLIB_ROOT /usr/local/opt/zlib)
+
+    EXECUTE_PROCESS(
+        COMMAND brew --prefix curl
+        OUTPUT_VARIABLE CURL_ROOT
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+    MESSAGE(STATUS "set ENV{CURL_ROOT} to: ${CURL_ROOT}")
+    set(ENV{CURL_ROOT} ${CURL_ROOT})
+
+    EXECUTE_PROCESS(
+        COMMAND brew --prefix icu4c
+        OUTPUT_VARIABLE ICU_ROOT
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+    MESSAGE(STATUS "set ENV{ICU_ROOT} to: ${ICU_ROOT}")
+    set(ENV{ICU_ROOT} ${ICU_ROOT})
+
+    EXECUTE_PROCESS(
+        COMMAND brew --prefix leveldb
+        OUTPUT_VARIABLE LEVELDB_ROOT
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+    MESSAGE(STATUS "set ENV{LEVELDB_ROOT} to: ${LEVELDB_ROOT}")
+    set(ENV{LEVELDB_ROOT} ${LEVELDB_ROOT})
+
+    EXECUTE_PROCESS(
+        COMMAND brew --prefix glog
+        OUTPUT_VARIABLE GLOG_ROOT
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+    MESSAGE(STATUS "set ENV{GLOG_ROOT} to: ${GLOG_ROOT}")
+    set(ENV{GLOG_ROOT} ${GLOG_ROOT})
+
+    EXECUTE_PROCESS(
+        COMMAND brew --prefix gflags
+        OUTPUT_VARIABLE GFLAGS_ROOT
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+    MESSAGE(STATUS "set ENV{GFLAGS_ROOT} to: ${GFLAGS_ROOT}")
+    set(ENV{GFLAGS_ROOT} ${GFLAGS_ROOT})
+
+    # set(CMAKE_PREFIX_PATH /usr/local/opt/curl-openssl /usr/local/opt/icu4c)
 
     add_compile_definitions(USE_BACKWARD=1)
 else()
@@ -80,8 +165,13 @@ FIND_PACKAGE(CURL REQUIRED)
 FIND_PACKAGE(ICU REQUIRED)
 FIND_PACKAGE(Protobuf REQUIRED)
 FIND_PACKAGE(LevelDB REQUIRED)
+
+
 FIND_PACKAGE(gflags REQUIRED)
 FIND_PACKAGE(glog REQUIRED)
+
+message("gflags_FOUND: ${gflags_FOUND}, ${gflags_DIR}, ${gflags_INCLUDE_DIR}, ${gflags_LIBRARIES}")
+message("glog_FOUND: ${glog_FOUND}, ${glog_DIR}, ${glog_INCLUDE_DIR}, ${glog_LIBRARIES}")
 
 message("OpenSSL library: ${OPENSSL_LIBRARIES}")
 
@@ -167,7 +257,7 @@ endif()
 set(ICU_ALL_LIBRARIES ${ICU_I18N_LIBRARIES} ${ICU_LIBRARIES} ${ICU_DATA_LIBRARIES})
 set(CORE_LIBS kakasi h2o-evloop braft brpc iconv ${ICU_ALL_LIBRARIES} ${CURL_LIBRARIES} for s2
               ${LevelDB_LIBRARIES} ${ROCKSDB_LIBS}
-              glog ${GFLAGS_LIBRARIES} ${PROTOBUF_LIBRARIES} ${STACKTRACE_LIBS}
+              glog::glog ${GFLAGS_LIBRARIES} ${PROTOBUF_LIBRARIES} ${STACKTRACE_LIBS}
               ${OPENSSL_LIBRARIES} ${ZLIB_LIBRARIES} ${JEMALLOC_LIBRARIES}
               ${SYSTEM_LIBS} pthread dl ${STD_LIB})
 
