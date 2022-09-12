@@ -168,10 +168,19 @@ FIND_PACKAGE(LevelDB REQUIRED)
 
 
 FIND_PACKAGE(gflags REQUIRED)
+
 FIND_PACKAGE(glog REQUIRED)
 
+# find_path(GLOG_INCLUDE_PATH NAMES glog/logging.h)
+# find_library(GLOG_LIB NAMES glog)
+# if((NOT GLOG_INCLUDE_PATH) OR (NOT GLOG_LIB))
+#   message(FATAL_ERROR "Fail to find glog")
+# endif()
+# include_directories(${GLOG_INCLUDE_PATH})
+
+
 message("gflags_FOUND: ${gflags_FOUND}, ${gflags_DIR}, ${gflags_INCLUDE_DIR}, ${gflags_LIBRARIES}")
-message("glog_FOUND: ${glog_FOUND}, ${glog_DIR}, ${glog_INCLUDE_DIR}, ${glog_LIBRARIES}")
+message("glog_FOUND: ${glog_FOUND}, ${glog_DIR}, ${glog_INCLUDE_DIRS}, ${glog_LIBRARIES}")
 
 message("OpenSSL library: ${OPENSSL_LIBRARIES}")
 
@@ -181,6 +190,7 @@ FILE(GLOB TEST_FILES test/*.cpp)
 include_directories(include)
 include_directories(include/tsl)
 include_directories(/usr/local/include)
+include_directories(/opt/homebrew/include)
 include_directories(${OPENSSL_INCLUDE_DIR})
 include_directories(${CURL_INCLUDE_DIR})
 include_directories(${ICU_INCLUDE_DIRS})
